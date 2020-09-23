@@ -32,6 +32,7 @@ void Airco::ChangeState_(Airco::State new_state)
 {
     if (new_state != state_)
     {
+        std::cout << "[Airco] State: " << new_state << "." << std::endl;
         auto prev_state = state_;
         state_ = new_state;
         for (auto& f : transition_callbacks_)
