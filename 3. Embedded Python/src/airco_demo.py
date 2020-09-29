@@ -1,45 +1,56 @@
-from airco import Airco, Cooler, Controller
+from airco import Airco, Temperature, Thermostat, Controller
 
 
 if __name__ == '__main__':
     print("Testing airco")
-    a = Airco()
 
-    print("Adding controller")
-    a.controller = Controller()
-    print("Adding cooler")
-    a.cooler = Cooler()
+    print("Creating thermostat")
+    thermostat = Thermostat()
+
+    print("Creating controller")
+    controller = Controller()
+
+    print("Creating airco")
+    airco = Airco(controller, thermostat)
+
     print("Adding callback functions")
-    cb = lambda running: print(f"[Callback] cooler is{'' if running else ' not'} running")
-    a.add_callback(cb)
+    cb = lambda running: print(f"[Callback] airco is{'' if running else ' not'} cooling")
+    airco.add_callback(cb)
 
     print("Starting airco")
-    a.start()
-    a.temperature(20.5)
-    a.temperature(21.2)
-    a.temperature(20.6)
-    a.temperature(19.9)
-    a.temperature(20.4)
+    airco.start()
+    airco.temperature(20.5)
+    airco.temperature(21.2)
+    airco.temperature(20.6)
+    airco.temperature(19.9)
+    airco.temperature(20.4)
 
     print("Stopping airco")
-    a.stop()
+    airco.stop()
+
+    del airco
 
     print("Testing inheritance")
 
     class PyController(Controller):
-        def HandleStateChange(self):
-            print("PyController handling state change")
-            Controller.HandleStateChange(self)
+        def signal(self, event):
+            print("[PyController] Received event:", event)
+            Controller.signal(self, event)
 
-    ctrl = PyController()
-    a.controller = ctrl
-    a.start()
+    print("Creating Python subclass of Controller")
+    py_controller = PyController()
+    print("Verifying that the derived class works")
+    py_controller.signal(Temperature.TEMP_LOW)
+    py_controller.signal(Temperature.TEMP_OK)
+    py_controller.signal(Temperature.TEMP_HIGH)
+
+    print("Creating airco with inherited controller")
+    airco2 = Airco(py_controller, thermostat)
+    airco2.add_callback(cb)
+    airco2.start()
     print("Setting temperature")
-    print("Should show: PyController handling state change:")
-    a.temperature(20.5)
-    a.temperature(21.3)
-    a.temperature(20.6)
-    a.temperature(19.5)
-    a.stop()
+    print("Expected: '[PyController] Received event:' (but does not happen)")
+    airco2.temperature(20.5)
+    airco2.stop()
 
 

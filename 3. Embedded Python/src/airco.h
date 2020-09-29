@@ -1,41 +1,29 @@
 #ifndef AIRCO_AIRCO_H
 #define AIRCO_AIRCO_H
 
-#include <condition_variable>
-#include <functional>
-#include <queue>
-#include <mutex>
-#include <thread>
 
 #include "controller.h"
-#include "cooler.h"
+#include "thermostat.h"
 
 class Airco
 {
 public:
-    explicit Airco(double low_temperature = 20.0, double high_temperature = 21.0,
-                   std::shared_ptr<Controller> controller = nullptr, std::shared_ptr<Cooler> cooler = nullptr);
-
+    Airco(Controller& controller, Thermostat& thermostat);
     virtual ~Airco() = default;
 
-    virtual bool Start();
-    virtual void Stop();
-    virtual void Temperature(double temperature);
-    virtual void SetController(std::shared_ptr<Controller> controller);
-    virtual void SetCooler(std::shared_ptr<Cooler> cooler);
-    virtual std::shared_ptr<Controller> GetController();
-    virtual std::shared_ptr<Cooler> GetCooler();
-    virtual void SetTemperatureRange(double low_temp, double high_temp);
-    virtual std::pair<double, double> GetTemperatureRange();
-    virtual void AddCallback(const Cooler::CallbackFunctionType& callback);
+    virtual void start();
+    virtual void stop();
+    virtual void temperature(double temp);
+    virtual void set_temperature_range(double low_temp, double high_temp);
+    virtual std::pair<double, double> get_temperature_range();
+    virtual void add_callback(const Controller::CallbackFunctionType callback);
 
 private:
-    std::shared_ptr<Controller> controller_;
-    std::shared_ptr<Cooler> cooler_;
+    Controller& controller_;
+    Thermostat& thermostat_;
     bool running_;
-    double temperature_high_;
-    double temperature_low_;
 };
 
 
 #endif //AIRCO_AIRCO_H
+

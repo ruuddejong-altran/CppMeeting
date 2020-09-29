@@ -1,28 +1,41 @@
-#include "thermostat.h"
 #include <iostream>
 
-Thermostat::Thermostat(Controller* controller, float low_temp, float high_temp) :
-        controller_(controller), low_temp_(low_temp), high_temp_(high_temp)
+#include "temperature.h"
+#include "thermostat.h"
+
+Thermostat::Thermostat(double low_temp, double high_temp)
 {
+    set_temperature_range(low_temp, high_temp);
 }
 
-void Thermostat::Connect(Controller *controller)
+void Thermostat::set_temperature_range(double low_temp, double high_temp)
 {
-    controller_ = controller;
-}
-
-void Thermostat::Temperature(float temp)
-{
-    std::cout << "[Thermostat] Temperature: " << temp << std::endl;
-    if (controller_)
+    if (low_temp < high_temp)
     {
-        if (temp > high_temp_)
-        {
-            controller_->TemperatureHigh();
-        }
-        else if (temp < low_temp_)
-        {
-            controller_->TemperatureLow();
-        }
+        low_temperature_ = low_temp;
+        high_temperature_ = high_temp;
     }
+    else
+    {
+        std::cout << "[Thermostat] Error: low temperature " << low_temp << "is not strictly less than high temperature"
+                  << high_temp << std::endl;
+    }
+}
+
+std::pair<double, double> Thermostat::get_temperature_range()
+{
+    return std::pair<double, double>(low_temperature_, high_temperature_);
+}
+
+TemperatureSignal Thermostat::temperature(double temp)
+{
+    if (temp <= low_temperature_)
+    {
+        return TemperatureSignal::TEMP_LOW;
+    }
+    if (temp >= high_temperature_)
+    {
+        return TemperatureSignal::TEMP_HIGH;
+    }
+    return TemperatureSignal::TEMP_OK;
 }

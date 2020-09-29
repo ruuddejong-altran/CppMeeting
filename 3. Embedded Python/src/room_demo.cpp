@@ -3,8 +3,8 @@
 #include <memory>
 #include <thread>
 
-#include "cooler.h"
 #include "controller.h"
+#include "thermostat.h"
 #include "airco.h"
 #include "room.h"
 
@@ -18,12 +18,10 @@ int main()
         std::cout << "[Callback] Cooler is" << (cooler_is_running ? "" : " not") << " running" << std::endl;
     };
 
-    std::shared_ptr<Cooler> cooler = std::make_shared<Cooler>();
-    std::shared_ptr<Controller> controller = std::make_shared<Controller>();
-    std::shared_ptr<Airco> airco = std::make_shared<Airco>();
-    airco->SetController(controller);
-    airco->SetCooler(cooler);
-    airco->AddCallback(callback);
+    auto controller = Controller();
+    auto thermostat = Thermostat();
+    auto airco = Airco(controller, thermostat);
+    airco.add_callback(callback);
 
     Room room(airco);
     room.Start();

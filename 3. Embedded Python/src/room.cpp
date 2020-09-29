@@ -4,8 +4,8 @@
 
 #include "room.h"
 
-Room::Room(std::shared_ptr<Airco> airco) :
-        airco_(std::move(airco)),
+Room::Room(Airco& airco) :
+        airco_(airco),
         temperature_(20.0),
         temperature_step_(0.1),
         temp_step_sign_(1.0),
@@ -13,41 +13,25 @@ Room::Room(std::shared_ptr<Airco> airco) :
 {
 }
 
-void Room::SetAirco(std::shared_ptr<Airco> airco)
-{
-    airco_ = std::move(airco);
-}
-
-std::shared_ptr<Airco> Room::GetAirco()
-{
-    return airco_;
-}
-
 void Room::Start()
 {
-    if (airco_ && airco_->Start())
+    auto cb = [this](bool cooler_is_running)
     {
-        auto cb = [this](bool cooler_is_running)
+        std::cout << "[Room Callback] Room is " << (cooler_is_running ? "cooling down" : "heating up") << std::endl;
+        if (cooler_is_running)
         {
-            std::cout << "[Callback] Cooler is" << (cooler_is_running ? "" : " not") << " running" << std::endl;
-            if (cooler_is_running)
-            {
-                temp_step_sign_ = -1.0;
-            }
-            else
-            {
-                temp_step_sign_ = 1.0;
-            }
-        };
-        airco_->AddCallback(cb);
-        running_ = true;
-        std::cout << "[Room] Starting airco" << std::endl;
-        cycle_thread_ = std::thread(&Room::cycle_, this);
-    }
-    else
-    {
-        std::cout << "[Room] Cannot start airco" << std::endl;
-    }
+            temp_step_sign_ = -1.0;
+        }
+        else
+        {
+            temp_step_sign_ = 1.0;
+        }
+    };
+    airco_.add_callback(cb);
+    airco_.start();
+    running_ = true;
+    std::cout << "[Room] Starting airco" << std::endl;
+    cycle_thread_ = std::thread(&Room::cycle_, this);
 }
 
 void Room::Stop()
@@ -62,7 +46,7 @@ void Room::cycle_()
     {
         temperature_ += temp_step_sign_ * temperature_step_;
         std::cout << "[Room] Temperature is " << temperature_  << " degrees." << std::endl;
-        airco_->Temperature(temperature_);
+        airco_.temperature(temperature_);
         {
             using namespace std::chrono_literals;
             std::this_thread::sleep_for(500ms);

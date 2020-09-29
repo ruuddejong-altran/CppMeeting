@@ -1,46 +1,46 @@
-#include "pybind11/embed.h"
-
+#include <iostream>
 #include "airco.h"
-
-namespace py = pybind11;
-using namespace std::chrono_literals;
-using namespace py::literals;
 
 int main()
 {
-    py::scoped_interpreter guard{};
-    py::module pycontroller_module = py::module::import("pycontroller");
-    py::object pycontroller_class = pycontroller_module.attr("PyController");
-    py::object pycontroller_object = pycontroller_class();
-
-    py::print("Testing Airco class");
+    std::cout << "Testing Airco class" << std::endl;
 
     auto callback = [](bool cooler_is_running) {
-        py::print("[Callback] Cooler is ", (cooler_is_running ? "" : "not "), "running", "sep"_a="");
+        std::cout << "[Callback] Airco is" << (cooler_is_running ? "" : " not") << " cooling" << std::endl;
     };
 
-    auto airco = Airco();
+    std::cout << "Creating thermostat" << std::endl;
+    auto thermostat = Thermostat();
 
-    py::print("Adding cooler to airco");
-    airco.SetCooler(std::make_shared<Cooler>());
-    py::print("Adding PyController object to airco");
-    airco.SetController(py::handle(pycontroller_object).cast<std::shared_ptr<Controller>>());
+    std::cout << "Creating controller" << std::endl;
+    auto controller = Controller();
+
+    std::cout << "Creating airco" << std::endl;
+    auto airco = Airco(controller, thermostat);
+
     std::cout << "Adding callback function" << std::endl;
-    airco.AddCallback(callback);
-    std::cout << "Trying to start airco (should be successful)" << std::endl;
-    airco.Start();
-    std::cout << "Trying temperature values" << std::endl;
-    airco.Temperature(19.8);
-    airco.Temperature(20.5);
-    airco.Temperature(21.2);
-    airco.Temperature(20.6);
-    airco.Temperature(19.9);
-    std::cout << "Stopping airco" << std::endl;
-    airco.Stop();
+    airco.add_callback(callback);
+
     std::cout << "Trying temperature values (should not give any result)" << std::endl;
-    airco.Temperature(19.8);
-    airco.Temperature(20.5);
-    airco.Temperature(21.2);
+    airco.temperature(19.8);
+    airco.temperature(20.5);
+    airco.temperature(21.2);
+
+    std::cout << "Starting airco" << std::endl;
+    airco.start();
+
+    std::cout << "Trying temperature values (should give result)" << std::endl;
+    airco.temperature(19.8);
+    airco.temperature(20.5);
+    airco.temperature(21.2);
+
+    std::cout << "Stopping airco" << std::endl;
+    airco.stop();
+
+    std::cout << "Trying temperature values (should not give any result)" << std::endl;
+    airco.temperature(19.8);
+    airco.temperature(20.5);
+    airco.temperature(21.2);
 
     return 0;
 }
