@@ -34,18 +34,22 @@ if __name__ == '__main__':
 
     class PyController(Controller):
         def signal(self, event):
-            print("PyController received event:", event)
+            print("[PyController] Received event:", event)
             Controller.signal(self, event)
 
-
+    print("Creating Python subclass of Controller")
     py_controller = PyController()
+    print("Verifying that the derived class works")
+    py_controller.signal(Temperature.TEMP_LOW)
+    py_controller.signal(Temperature.TEMP_OK)
+    py_controller.signal(Temperature.TEMP_HIGH)
 
     print("Creating airco with inherited controller")
     airco2 = Airco(py_controller, thermostat)
     airco2.add_callback(cb)
     airco2.start()
     print("Setting temperature")
-    print("Expected: PyController received event: (but does not happen)")
+    print("Expected: '[PyController] Received event:' (but does not happen)")
     airco2.temperature(20.5)
     airco2.stop()
 
