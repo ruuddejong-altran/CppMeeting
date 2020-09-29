@@ -1,59 +1,46 @@
+#include <iostream>
 #include "airco.h"
-
-using namespace std::chrono_literals;
 
 int main()
 {
     std::cout << "Testing Airco class" << std::endl;
 
     auto callback = [](bool cooler_is_running) {
-        std::cout << "[Callback] Cooler is" << (cooler_is_running ? "" : " not") << " running" << std::endl;
+        std::cout << "[Callback] Airco is" << (cooler_is_running ? "" : " not") << " cooling" << std::endl;
     };
 
-    std::cout << "Creating airco without cooler and controller" << std::endl;
-    auto airco = Airco();
-    std::cout << "Trying to add callback function (should give error message)" << std::endl;
-    airco.AddCallback(callback);
-    std::cout << "Trying to start airco (should give error message)" << std::endl;
-    airco.Start();
-    std::cout << "Trying temperature values (should not give any result)" << std::endl;
-    airco.Temperature(19.8);
-    airco.Temperature(20.5);
-    airco.Temperature(21.2);
+    std::cout << "Creating thermostat" << std::endl;
+    auto thermostat = Thermostat();
 
     std::cout << "Creating controller" << std::endl;
-    auto ctrl = std::make_shared<Controller>();
-    std::cout << "Adding controller to airco" << std::endl;
-    airco.SetController(ctrl);
-    std::cout << "Trying to add callback function (should give error message)" << std::endl;
-    airco.AddCallback(callback);
-    std::cout << "Trying to start airco (should give error message)" << std::endl;
-    airco.Start();
-    std::cout << "Trying temperature values (should not give any result)" << std::endl;
-    airco.Temperature(19.8);
-    airco.Temperature(20.5);
-    airco.Temperature(21.2);
+    auto controller = Controller();
 
-    std::cout << "Creating cooler" << std::endl;
-    auto cooler = std::make_shared<Cooler>();
-    std::cout << "Adding cooler to airco" << std::endl;
-    airco.SetCooler(cooler);
-    std::cout << "Trying to add callback function" << std::endl;
-    airco.AddCallback(callback);
-    std::cout << "Trying to start airco (should be successful)" << std::endl;
-    airco.Start();
-    std::cout << "Trying temperature values" << std::endl;
-    airco.Temperature(19.8);
-    airco.Temperature(20.5);
-    airco.Temperature(21.2);
-    airco.Temperature(20.6);
-    airco.Temperature(19.9);
-    std::cout << "Stopping airco" << std::endl;
-    airco.Stop();
+    std::cout << "Creating airco" << std::endl;
+    auto airco = Airco(controller, thermostat);
+
+    std::cout << "Adding callback function" << std::endl;
+    airco.add_callback(callback);
+
     std::cout << "Trying temperature values (should not give any result)" << std::endl;
-    airco.Temperature(19.8);
-    airco.Temperature(20.5);
-    airco.Temperature(21.2);
+    airco.temperature(19.8);
+    airco.temperature(20.5);
+    airco.temperature(21.2);
+
+    std::cout << "Starting airco" << std::endl;
+    airco.start();
+
+    std::cout << "Trying temperature values (should give result)" << std::endl;
+    airco.temperature(19.8);
+    airco.temperature(20.5);
+    airco.temperature(21.2);
+
+    std::cout << "Stopping airco" << std::endl;
+    airco.stop();
+
+    std::cout << "Trying temperature values (should not give any result)" << std::endl;
+    airco.temperature(19.8);
+    airco.temperature(20.5);
+    airco.temperature(21.2);
 
     return 0;
 }

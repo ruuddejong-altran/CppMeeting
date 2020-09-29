@@ -11,15 +11,13 @@ add_subdirectory(../pybind11 ${CMAKE_CURRENT_BINARY_DIR}//pybind11)
 
 add_library(airco_lib SHARED
         src/airco.cpp
-        src/cooler.cpp
         src/controller.cpp
+        src/temperature.cpp
+        src/thermostat.cpp
         )
 
 pybind11_add_module(airco MODULE src/airco_module.cpp)
 target_link_libraries(airco PRIVATE airco_lib)
-
-add_executable(cooler_demo src/cooler_demo.cpp)
-target_link_libraries(cooler_demo PRIVATE airco_lib)
 
 add_executable(controller_demo src/controller_demo.cpp)
 target_link_libraries(controller_demo PRIVATE airco_lib)
