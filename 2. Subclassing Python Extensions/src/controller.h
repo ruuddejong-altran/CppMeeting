@@ -1,32 +1,29 @@
 #ifndef AIRCO_CONTROLLER_H
 #define AIRCO_CONTROLLER_H
 
-#include "cooler.h"
+#include <functional>
+#include "temperature.h"
 
 class Controller
 {
 public:
-    enum class Event {
-        TEMP_HIGH,
-        TEMP_OK,
-        TEMP_LOW,
-    };
-    explicit Controller(std::shared_ptr<Cooler> cooler = nullptr);
+    using CallbackFunctionType = std::function<void(bool)>;
+
+    Controller();
     virtual ~Controller() = default;
-    virtual void SetCooler(std::shared_ptr<Cooler> cooler);
-    virtual std::shared_ptr<Cooler> GetCooler();
-    virtual void Signal(Event event);
+    virtual void signal(TemperatureSignal a_signal);
+    virtual void add_callback(CallbackFunctionType callback);
 
 protected:
-    virtual void HandleStateChange();
-    std::shared_ptr<Cooler> cooler_;
+    virtual void handle_state_change();
     struct
     {
-        Event temperature;
+        TemperatureSignal temperature;
     } state_;
-};
 
-std::string& ToString(Controller::Event event);
-std::ostream& operator<<(std::ostream& ostream, Controller::Event event);
+private:
+    std::vector<CallbackFunctionType> callbacks_;
+    void do_callbacks_with(bool value);
+};
 
 #endif //AIRCO_CONTROLLER_H

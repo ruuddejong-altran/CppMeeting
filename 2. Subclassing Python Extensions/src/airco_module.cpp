@@ -1,7 +1,8 @@
 #include "pybind11/pybind11.h"
 #include "pybind11/functional.h"
 
-#include "cooler.h"
+#include "temperature.h"
+#include "thermostat.h"
 #include "controller.h"
 #include "airco.h"
 
@@ -12,59 +13,52 @@ using namespace py::literals;
 class Trampoline_Controller : public Controller
 {
 public:
-    using Controller::Controller;  // Inherit constructors
-    void HandleStateChange() override
+    using Controller::Controller;
+
+    void signal(TemperatureSignal a_signal) override
     {
-        PYBIND11_OVERLOAD(void, Controller, HandleStateChange,);
+        PYBIND11_OVERRIDE(void, Controller, signal, a_signal);
+    };
+
+    void handle_state_change() override
+    {
+        PYBIND11_OVERRIDE(void, Controller, handle_state_change,);
     }
 };
 
 class Publicist_Controller : public Controller
 {
 public:
-    using Controller::HandleStateChange;
+    using Controller::handle_state_change;
 };
 
 PYBIND11_MODULE(airco, m)
 {
     m.doc() = "Airco extension module";
 
-    py::class_<Cooler, std::shared_ptr<Cooler>> py_cooler(m, "Cooler");
+    py::enum_<TemperatureSignal>(m, "Temperature")
+            .value("TEMP_HIGH", TemperatureSignal::TEMP_HIGH)
+            .value("TEMP_OK", TemperatureSignal::TEMP_OK)
+            .value("TEMP_LOW", TemperatureSignal::TEMP_LOW);
 
-    py::enum_<Cooler::State>(py_cooler, "State")
-            .value("OFF", Cooler::State::Off)
-            .value("ON", Cooler::State::On);
-
-    py_cooler.def(py::init<>())
-            .def_property_readonly("state", &Cooler::GetState, "The cooler's state")
-            .def("on", &Cooler::On, "Turn the cooler on")
-            .def("off", &Cooler::Off, "Turn the cooler off")
-            .def("add_callback", &Cooler::AddCallback, "Add transition callback function f(cooler_running)");
-
-    py::class_<Controller, std::shared_ptr<Controller>, Trampoline_Controller> py_controller(m, "Controller");
-
-    py::enum_<Controller::Event>(py_controller, "Event")
-            .value("TEMP_HIGH", Controller::Event::TEMP_HIGH)
-            .value("TEMP_OK", Controller::Event::TEMP_OK)
-            .value("TEMP_LOW", Controller::Event::TEMP_LOW);
-
-    py_controller.def(py::init<>())
-            .def(py::init<std::shared_ptr<Cooler>>())
-            .def_property("cooler", &Controller::GetCooler, &Controller::SetCooler)
-            .def("signal", &Controller::Signal)
-            .def("HandleStateChange", &Publicist_Controller::HandleStateChange);
-
-    py::class_<Airco>(m, "Airco")
+    py::class_<Thermostat>(m, "Thermostat")
             .def(py::init<>())
             .def(py::init<double>())
             .def(py::init<double, double>())
-            .def(py::init<double, double, std::shared_ptr<Controller>>())
-            .def(py::init<double, double, std::shared_ptr<Controller>, std::shared_ptr<Cooler>>())
-            .def("start", &Airco::Start)
-            .def("stop", &Airco::Stop)
-            .def("temperature", &Airco::Temperature)
-            .def_property("controller", &Airco::GetController, &Airco::SetController)
-            .def_property("cooler", &Airco::GetCooler, &Airco::SetCooler)
-            .def_property("temperature_range", &Airco::GetTemperatureRange, &Airco::SetTemperatureRange)
-            .def("add_callback", &Airco::AddCallback);
+            .def_property("temperature_range", &Thermostat::get_temperature_range, &Thermostat::set_temperature_range)
+            .def("temperature", &Thermostat::temperature);
+
+    py::class_<Controller, Trampoline_Controller>(m, "Controller")
+            .def(py::init<>())
+            .def("add_callback", &Controller::add_callback)
+            .def("signal", &Controller::signal)
+            .def("handle_state_change", &Publicist_Controller::handle_state_change);
+
+    py::class_<Airco>(m, "Airco")
+            .def(py::init<Controller&, Thermostat&>())
+            .def("start", &Airco::start)
+            .def("stop", &Airco::stop)
+            .def("temperature", &Airco::temperature)
+            .def_property("temperature_range", &Airco::get_temperature_range, &Airco::set_temperature_range)
+            .def("add_callback", &Airco::add_callback);
 }

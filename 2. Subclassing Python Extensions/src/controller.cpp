@@ -1,88 +1,54 @@
-#include <chrono>
-#include <condition_variable>
-#include <memory>
-#include <map>
-#include <mutex>
-#include <queue>
-#include <thread>
-#include <utility>
+#include <iostream>
 
 #include "controller.h"
 
-using namespace std::chrono_literals;
 
-Controller::Controller(std::shared_ptr<Cooler> cooler) :
-        cooler_(std::move(cooler)),
-        state_{Event::TEMP_OK}
+Controller::Controller() :
+        state_{TemperatureSignal::TEMP_OK},
+        callbacks_()
 {
 }
 
-
-void Controller::SetCooler(std::shared_ptr<Cooler> cooler)
+void Controller::add_callback(Controller::CallbackFunctionType callback)
 {
-    cooler_ = std::move(cooler);
+    callbacks_.push_back(callback);
 }
 
-void Controller::Signal(Controller::Event event)
+void Controller::signal(TemperatureSignal a_signal)
 {
-    std::cout << "[Controller] Received event " << event << std::endl;
-    switch (event)
+    std::cout << "[Controller] Received event " << a_signal << std::endl;
+    switch (a_signal)
     {
-        case Event::TEMP_LOW:
-        case Event::TEMP_HIGH:
-        case Event::TEMP_OK:
-            state_.temperature = event;
+        case TemperatureSignal::TEMP_LOW:
+        case TemperatureSignal::TEMP_HIGH:
+        case TemperatureSignal::TEMP_OK:
+            state_.temperature = a_signal;
             break;
         default:
             break;
     }
-    HandleStateChange();
+    handle_state_change();
 }
 
-void Controller::HandleStateChange()
+void Controller::handle_state_change()
 {
-    if (cooler_)
-    {
         switch (state_.temperature)
         {
-            case Event::TEMP_HIGH:
-                cooler_->On();
+            case TemperatureSignal::TEMP_HIGH:
+                do_callbacks_with(true);
                 break;
-            case Event::TEMP_LOW:
-                cooler_->Off();
+            case TemperatureSignal::TEMP_LOW:
+                do_callbacks_with(false);
                 break;
             default:
                 break;
         }
-    }
 }
 
-std::shared_ptr<Cooler> Controller::GetCooler()
+void Controller::do_callbacks_with(bool value)
 {
-    return cooler_;
-}
-
-std::string& ToString(Controller::Event event)
-{
-    static std::map<Controller::Event, std::string> stateStrings;
-
-    if (stateStrings.empty())
+    for (auto& f : callbacks_)
     {
-        auto extractEnumSymbol = [](const std::string& s)
-        {
-            std::size_t last_colon = s.rfind(':');
-            return (last_colon == std::string::npos) ? s : s.substr(last_colon + 1);
-        };
-#define ADD_ENUM_STRING(x) stateStrings[x] = extractEnumSymbol(std::string(#x))
-        ADD_ENUM_STRING(Controller::Event::TEMP_OK);
-        ADD_ENUM_STRING(Controller::Event::TEMP_LOW);
-        ADD_ENUM_STRING(Controller::Event::TEMP_HIGH);
-#undef ADD_ENUM_STRING
+        f(value);
     }
-    return stateStrings[event];
-}
-
-std::ostream& operator<<(std::ostream& ostream, Controller::Event event)
-{
-    return ostream << ToString(event);
 }
