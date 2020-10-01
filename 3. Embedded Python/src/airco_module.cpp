@@ -59,6 +59,7 @@ PYBIND11_MODULE(airco, m)
             .def("start", &Airco::start)
             .def("stop", &Airco::stop)
             .def("temperature", &Airco::temperature)
-            .def_property("temperature_range", &Airco::get_temperature_range, &Airco::set_temperature_range)
+            .def("get_temperature_range", &Airco::get_temperature_range)
+            .def("set_temperature_range", &Airco::set_temperature_range)
             .def("add_callback", &Airco::add_callback);
 }

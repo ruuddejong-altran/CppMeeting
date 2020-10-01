@@ -1,6 +1,4 @@
 #include "airco.h"
-#include "controller.h"
-#include "temperature.h"
 
 #include "pybind11/embed.h"
 

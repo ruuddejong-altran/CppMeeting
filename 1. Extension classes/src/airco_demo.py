@@ -14,7 +14,7 @@ if __name__ == '__main__':
     airco = Airco(controller, thermostat)
 
     print("Adding callback functions")
-    cb = lambda running: print(f"[Callback] airco is{'' if running else ' not'} cooling")
+    cb = lambda running: print(f"[Callback] {'cooling down' if running else 'warming up'}")
     airco.add_callback(cb)
 
     print("Starting airco")
@@ -30,27 +30,27 @@ if __name__ == '__main__':
 
     del airco
 
-    print("Testing inheritance")
-
-    class PyController(Controller):
-        def signal(self, event):
-            print("[PyController] Received event:", event)
-            Controller.signal(self, event)
-
-    print("Creating Python subclass of Controller")
-    py_controller = PyController()
-    print("Verifying that the derived class works")
-    py_controller.signal(Temperature.TEMP_LOW)
-    py_controller.signal(Temperature.TEMP_OK)
-    py_controller.signal(Temperature.TEMP_HIGH)
-
-    print("Creating airco with inherited controller")
-    airco2 = Airco(py_controller, thermostat)
-    airco2.add_callback(cb)
-    airco2.start()
-    print("Setting temperature")
-    print("Expected: '[PyController] Received event:' (but does not happen)")
-    airco2.temperature(20.5)
-    airco2.stop()
+    # print("Testing inheritance")
+    #
+    # class PyController(Controller):
+    #     def signal(self, event):
+    #         print("[PyController] Received event:", event)
+    #         Controller.signal(self, event)
+    #
+    # print("Creating Python subclass of Controller")
+    # py_controller = PyController()
+    # print("Verifying that the derived class works")
+    # py_controller.signal(Temperature.TEMP_LOW)
+    # py_controller.signal(Temperature.TEMP_OK)
+    # py_controller.signal(Temperature.TEMP_HIGH)
+    #
+    # print("Creating airco with inherited controller")
+    # airco2 = Airco(py_controller, thermostat)
+    # airco2.add_callback(cb)
+    # airco2.start()
+    # print("Setting temperature")
+    # print("Expected: '[PyController] Received event:' (but does not happen)")
+    # airco2.temperature(20.5)
+    # airco2.stop()
 
 

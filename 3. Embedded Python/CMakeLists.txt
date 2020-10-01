@@ -32,6 +32,9 @@ target_link_libraries(room_demo PRIVATE airco_lib)
 add_executable(embed_demo src/embedded_demo.cpp)
 target_link_libraries(embed_demo PRIVATE airco_lib pybind11::embed)
 
+add_executable(console_demo src/console_demo.cpp)
+target_link_libraries(console_demo PRIVATE airco_lib pybind11::embed)
+
 add_custom_target(copy_demo ALL
         COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_CURRENT_SOURCE_DIR}/src/airco_demo.py
         ${CMAKE_CURRENT_SOURCE_DIR}/src/pycontroller.py ${CMAKE_CURRENT_BINARY_DIR})
