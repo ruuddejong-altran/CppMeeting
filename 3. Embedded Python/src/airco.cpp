@@ -3,8 +3,8 @@
 #include "airco.h"
 
 Airco::Airco(Controller& controller, Thermostat& thermostat) :
-        controller_(controller),
-        thermostat_(thermostat),
+        controller_(&controller),
+        thermostat_(&thermostat),
         running_(false)
 {
 }
@@ -26,21 +26,31 @@ void Airco::temperature(double temp)
     std::cout << "[Airco] Received temperature " << temp << std::endl;
     if (running_)
     {
-        controller_.signal(thermostat_.temperature(temp));
+        controller_->signal(thermostat_->temperature(temp));
     }
 }
 
 void Airco::add_callback(const Controller::CallbackFunctionType callback)
 {
-    controller_.add_callback(callback);
+    controller_->add_callback(callback);
 }
 
 void Airco::set_temperature_range(double low_temp, double high_temp)
 {
-    thermostat_.set_temperature_range(low_temp, high_temp);
+    thermostat_->set_temperature_range(low_temp, high_temp);
 }
 
 std::pair<double, double> Airco::get_temperature_range()
 {
-    return thermostat_.get_temperature_range();
+    return thermostat_->get_temperature_range();
+}
+
+void Airco::set_controller(Controller *controller)
+{
+    controller_ = controller;
+}
+
+void Airco::set_thermostat(Thermostat *thermostat)
+{
+    thermostat_ = thermostat;
 }

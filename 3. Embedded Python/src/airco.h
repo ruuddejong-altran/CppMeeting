@@ -18,9 +18,12 @@ public:
     virtual std::pair<double, double> get_temperature_range();
     virtual void add_callback(const Controller::CallbackFunctionType callback);
 
+    virtual void set_controller(Controller* controller);
+    virtual void set_thermostat(Thermostat* thermostat);
+
 private:
-    Controller& controller_;
-    Thermostat& thermostat_;
+    Controller* controller_;
+    Thermostat* thermostat_;
     bool running_;
 };
 
