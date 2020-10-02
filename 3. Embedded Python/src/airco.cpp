@@ -47,10 +47,16 @@ std::pair<double, double> Airco::get_temperature_range()
 
 void Airco::set_controller(Controller *controller)
 {
-    controller_ = controller;
+    if (controller)
+    {
+        controller_ = controller;
+    }
 }
 
 void Airco::set_thermostat(Thermostat *thermostat)
 {
-    thermostat_ = thermostat;
+    if (thermostat)
+    {
+        thermostat_ = thermostat;
+    }
 }

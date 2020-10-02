@@ -29,4 +29,9 @@ int main()
     auto code_module = py::module::import("code");
     auto interact_func = code_module.attr("interact");
     interact_func(py::cast("Airco interactive shell"), nullptr, locals, py::cast("Bye now"));
+
+    py::print("Verifying that C++ objects still exist");
+    controller.signal(TemperatureSignal::TEMP_HIGH);
+    py::print(thermostat.temperature(21.5));
+    airco.start();
 }

@@ -49,7 +49,7 @@ if __name__ == '__main__':
     airco2.add_callback(cb)
     airco2.start()
     print("Setting temperature")
-    print("Expected: '[PyController] Received event:' (but does not happen)")
+    print("Expected: '[PyController] Received event:'")
     airco2.temperature(20.5)
     airco2.stop()
 
